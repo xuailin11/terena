@@ -6,7 +6,7 @@ while :
      do
        m=`curl 192.168.4.${j} 2> /dev/null | md5sum`
        if [ ${m:0:32} != $a ];then
-          ipvsadm -ln | grep ${j} &> /dev/null
+          ipvsadm -ln | grep "192.168.4.${j}" &> /dev/null
          [ $? -eq 0 ] && ipvsadm -d -t 192.168.4.20:80 -r 192.168.4.${j}
       else
          ipvsadm -ln | grep ${j} &> /dev/null
