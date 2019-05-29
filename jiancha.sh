@@ -9,7 +9,7 @@ while :
           ipvsadm -ln | grep "192.168.4.${j}" &> /dev/null
          [ $? -eq 0 ] && ipvsadm -d -t 192.168.4.20:80 -r 192.168.4.${j}
       else
-         ipvsadm -ln | grep ${j} &> /dev/null
+          ipvsadm -ln | grep "192.168.4.${j}" &> /dev/null
          [ $? -ne 0 ] && systemctl restart keepalived && iptables -F
        fi
      done
