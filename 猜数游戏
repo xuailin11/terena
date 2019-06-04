@@ -2,11 +2,11 @@
 i=1
 j=0
 while :
-do
+do    
  num=$[RANDOM%100]
   while :
    do
-     read -p "第$i次猜数" cai
+     read -p "第$i次猜数:" cai
      if [ $cai == q ];then
      echo "共计猜了$i次,猜对了$j次"
         exit
