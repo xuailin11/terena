@@ -1,0 +1,857 @@
+ip  172.40.50.117    vnc 7000
+
+庞丽静  静静
+
+panglj@tedu.cn
+
+1903   13   402   
+
+学生
+
+不迟到 不早退  认证听讲  专心做实验
+
+第三阶段 （数据库管理员  DBA ）     （运维工程师 DBA）
+1  RDBMS---MYSQL     2 NOsql---Redis  3 监控与安全
+
+RDBMS1---day01
+一、搭建数据库服务器
+	1.1 相关概念
+	1.2 在50主机部署mysql数据库服务      练习到 11：35
+		解包
+		安装软件包
+		启动mysqld服务
+		查看服务进程和端口
+		查看初始登陆密码
+		使用初始密码登陆
+		修改登陆密码
+		断开连接
+		使用修改后的密码登陆
+		修改密码策略
+		根据新密码策略设置密码
+		使用新密码登陆
+
+]# tar -xvf  mysql-5.7.17.tar 
+]# ls *.rpm
+]# yum -y  install mysql-community-*.rpm
+]# systemctl  start mysqld
+]# ls  /var/lib/mysql
+]# systemctl  enable mysqld
+]# netstat  -utnlp  | grep  :3306
+]# ps -C  mysqld
+
+		]# grep  password  /var/log/mysqld.log 
+		]# mysql -hlocalhost -uroot -p'f<tbekh-d8Y!'
+		mysql> alter user  root@"localhost" identified by "123qqq...A";
+		mysql> exit
+
+]# mysql  -uroot -p123qqq...A
+mysql> show variables like "%password%";
+mysql> set global validate_password_length=6;
+mysql> set global validate_password_policy=0;
+mysql> alter user  root@"localhost" identified by "tarena";
+mysql> exit
+
+	]# mysql  -uroot -ptarena
+	]# vim /etc/my.cnf
+		[mysqld]
+		validate_password_length=6
+		validate_password_policy=0
+	:wq
+
+二、数据库服务的基本使用
+	2.1 连接方式
+	2.2 数据存储流程 ?
+	2.3 mysql管理环境 (SQL命令)
+
+练习25分钟到 13：55
+	2.4 库管理命令 （创建新库 查看已有的库 切换库 删除库 库名命名规则）
+	2.5 表管理命令 （查看已有的表  创建新表 查看表结构 查看表记录）
+	2.6 记录管理命令（查看已有记录 插入新记录 修改记录 删除记录）
+
+设置表记录可以写中文
+		]# LANG="zh_CN.UTF-8"
+mysql> create table db1.学生表(
+   姓名 char(10), 
+   家庭地址 char(20) 
+   ) DEFAULT CHARSET=utf8;
+
+mysql> insert into db1.学生表 values("张三丰","武当山");
+mysql> insert into db1.学生表 values("张四丰","武台山");
+mysql> select  * from  db1.学生表;
+
+						
+三、MySQL数据类型
+	3.1 字符类型  char   varchar
+
+	3.2 数值类型  练习到 15：35 
+		整数类型  tinyint  smallint int  bigint
+		浮点类型  float  double
+mysql> create table db1.t5 (name char(10), level  tinyint );
+mysql> insert into  db1.t5 values ("zbj",-1);
+mysql> insert into  db1.t5 values ("zbj",-129);
+mysql> insert into  db1.t5 values ("zbj",198);
+
+mysql> create table db1.t6 (name char(10), level  tinyint unsigned);
+mysql> insert into  db1.t6 values ("zbj",-1);
+mysql> insert into  db1.t6 values ("zbj",0);
+mysql> insert into  db1.t6 values ("zbj",256);
+mysql> insert into  db1.t6 values ("zbj",25);
+mysql> insert into  db1.t6 values ("zbj",25.22);
+mysql> insert into  db1.t6 values ("zbj",25.52);
+
+mysql> create  table db1.t3(pay float , id double);
+mysql> insert into db1.t3 values(9999.23,9999.77);
+
+mysql> create  table db1.t4( pay float(5,2) , id double(4,2) );
+mysql> insert into db1.t4 values(9999.23,9999.77);
+
+mysql> create table  db1.t7(stu_num int , name char(5) , 
+       age tinyint ,pay float ,money float(7,2) );
+
+mysql> desc  db1.t7 ;
+				练习到 15：45 
+
+	3.3 日期时间类型
+		年    日期   时间   日期时间
+		year  date   time   datetime/ timestamp
+
+create table db1.t8(      休息到 16：15  
+name  char(15),
+your_s    year,
+birthday  date,
+up_class  time,
+party  datetime
+);
+
+desc  db1.t8 ;
+
+insert into  db1.t8  values
+("bob",1990,20191120,083000,20190607203000);
+
+当year类型 使用2位数赋值时：
+01~69视为  2001~2069
+70~99视为  1970~1999
+insert into  db1.t8  values
+("tom",77,20191120,083000,20190607203000);
+
+select  * from  db1.t8 ;
+	
+当未给timestamp字段赋值时，自动以当前系统时间赋值，而datetime 值为 NULL (空)
+
+create table  db1.t9(  练习到 16:30 
+meetting  datetime,
+party	  timestamp
+) ;
+
+insert into  db1.t9 values (20190606162000,20190606162000);
+
+insert into  db1.t9(meetting) values (20180707093000);
+
+insert into  db1.t9(party) values (20160707093000);
+
+select  *  from  db1.t9;
+
+可以使用时间函数给字段赋值
+
+mysql> insert into db1.t8 values
+( "jack" , year(now()) , date(now()) , curtime() , now()  );
+
+	3.4 枚举类型
+	enum 单选
+	set  多选
+
+create table db1.t10 (
+ name  char(10),
+ sex   enum("boy","girl","no"),
+ likes set("eat","game","piao","du","film")
+);
+
+
+mysql> desc db1.t10;
+
+insert into  db1.t10 values ("jack","man","a,b,c");
+insert into  db1.t10 values ("jack","boy","eat,piao");
+
+select  * from  db1.t10 ;
+
+RDBMS1_day01 内容总结 
+一、搭建的mysql数据库服务器：什么是数据库？ 数据库服务软件？
+			        mysql优点？ 应用场景？ LAMP / LNMP 
+			      安装mysql软件 启动服务  使用初始密码登陆
+				修改登陆密码  设置密码策略
+
+二、基本使用？ 把数据库存储到mysql服务器上的步骤 ？
+	       连接方式？
+	       库的基本管理命令 表的基本管理命令  记录管理
+		SQL命令使用规则
+
+三、数据类型： 字符  数值  日期时间  枚举
+
+
+
++++++++++RDBMS1_day02
+一、表结构
+	2.1 约束条件 
+		作用：限制给表字段赋值
+		查看字段的约束条件： desc 库.表；
+		约束条件包括那些： 
+				 是否允许为空 (null)    not null
+				 键值
+				 默认值  default 值
+				 额外设置
+
+mysql> create table db1.t21(
+    -> name char(10) not null,
+    -> age  tinyint  unsigned  default  25,
+    -> sex  enum("m","w") not null  default "w"
+    -> );
+mysql> insert into  db1.t21(name)values("jerry");
+mysql> insert into  db1.t21    values("bob",29,"m");
+
+mysql> insert into  db1.t21    values(null,null,null);
+
+mysql> insert into  db1.t21    values("null",null,null);
+ERROR 1048 (23000): Column 'sex' cannot be null
+mysql> 
+
+mysql> insert into  db1.t21    values("null",null,"m");
+mysql> select  * from  db1.t21;
+
+
+	2.2 修改表结构
+		命令格式  alter  table  库.表 执行动作;
+		执行动作包括如下：
+	        		add  添加新字段
+mysql> alter table db1.t10  add  email  varchar(50) default "stu@tedu.cn" ;
+mysql> alter table  db1.t10 add  stu_num char(9) first;
+mysql> alter table db1.t10  add  age  tinyint  unsigned  not null default 19  after name;
+
+练习到 10：25 
+
+				drop 删除已有字段
+mysql> alter table db1.t10 drop email ,drop stu_num ;
+
+				modify  修改字段类型
+注意：修改的字段类型与已经存储的数据冲突时，不允许修改类型
+
+mysql> alter table db1.t10  modify  name varchar(15)   default  "" ;
+
+
+mysql> alter table db1.t10 
+           modify age tinyint unsigned not null default 19 after sex;
+
+				change  修改字段名
+mysql> alter table  db1.t10 
+           change likes loves set('eat','game','piao','du','film') ;
+				rename  修改表名
+
+mysql> alter table db1.t10 rename db1.classinfo;
+
+		休息到 11：15 
+二、MySQL 键值
+	键值类型：
+		普通索引 index  ***
+		唯一索引 unique
+		主    键 primary  key ***
+		外    键 foreign  key ***
+		全文索引 fulltext
+
+	作用：约束如何给字段赋值
+
+	普通索引（index）
+		什么是索引（索引介绍）
+		为什么要使用索引（索引优点与缺点）
+		使用索引：
+			 使用规则 ？
+			 查看 desc  库.表  key 
+			      show   index  from  表名 \G;			        
+
+			 创建索引:
+				建表时创建索引字段
+					create  table db1.t22(
+						class  char(9),
+						name  char(15),
+						age int,
+						index(name),index(age)
+					 );
+
+					desc  db1.t22;
+
+				        show index  from  db1.t22\G;
+
+				在已有表里创建索引字段
+					mysql> create index xixi 
+							on  stuinfo(name);
+
+			 删除索引:
+				mysql> drop  index  name on t22;
+
+	2.2 主    键 primary  key
+			作用：限制字段赋值
+			使用规则？
+			使用主键：
+				1 创建主键
+					1.1 建表时创建主键
+mysql> create table  db1.t23(
+    -> name char(10) primary key,
+    -> age int,
+    -> pay float(7,2) 
+    -> );
+
+mysql> desc  db1.t23 ;
+mysql> insert into  db1.t23 values(null,19,28800.88);
+mysql> insert into  db1.t23 values("bob",19,28800.88);
+mysql> insert into  db1.t23 values("bob",29,38800.88);
+
+					1.2 在已有表里添加主键
+		mysql> select  * from  db1.classinfo;
+		mysql> delete from  db1.classinfo;
+		mysql> alter table  db1.classinfo add  primary key(name);
+		mysql> desc  db1.classinfo;
+
+练习到 14：45
+
+				2 创建复合主键
+				    约束方式： 主键字段的值不可以同时重复
+	PRI       PRI
+	clientip  serport  status   
+ 	1.1.1.1   22        yes
+	1.1.1.1   22        yes
+
+create table db1.t24(
+clientip  char(15),
+serport	  int,
+status    enum("yes","no"),
+primary key(clientip,serport)
+);
+
+mysql> insert into db1.t24 values ("1.1.1.1",22,"yes");
+mysql> insert into db1.t24 values ("1.1.1.1",22,"no");
+mysql> insert into db1.t24 values ("1.1.1.1",22,"yes");
+mysql> insert into db1.t24 values ("1.1.1.1",25,"yes");
+mysql> insert into db1.t24 values ("1.1.1.1",25,"no");
+mysql> insert into db1.t24 values ("2.1.1.1",25,"no");
+
+				3 primary key与auto_increment连用
+						自增长
+						赋值时 字段的值字段加1
+
+ id  name  age sex
+ 1   bob   19  boy
+ 2  tom   21  boy
+ 3  jerry  25  boy
+ 4  lucy   18  girl
+
+create table  db1.t25(
+ id int primary key  auto_increment,
+ name char(15),
+ age tinyint ,
+ sex enum("boy","girl")
+);
+
+mysql> desc db1.t25 ;
+
+mysql> insert into  db1.t25(name,age,sex)values("bob",19,"boy");
+
+mysql> insert into  db1.t25(name,age,sex)values("tom",21,"boy");
+
+mysql> select  * from  db1.t25;
+
+mysql> insert into db1.t25 values (6,"bob",19,"girl");
+mysql> select  * from  db1.t25;
+
+mysql> insert into  db1.t25(name,age,sex)values("jack",27,"boy");
+mysql> select  * from  db1.t25;
+
+mysql> delete from   db1.t25;
+mysql> select  * from db1.t25;
+
+mysql> insert into  db1.t25(name,age,sex)values("jack",27,"boy");
+mysql> select  * from db1.t25;
+
+				4 删除主键
+				mysql> alter table db1.t23 drop  primary key;
+
+				mysql> alter table  db1.t24 drop primary key;
+
+			mysql> alter table  db1.t25  modify id int;
+			mysql> alter table  db1.t25 drop  primary key;
+ 
+				
+	2.3 外    键 foreign  key
+			作用：限制给字段赋值，插入记录时，
+				     字段值在另一个表字段值范围内选择。
+
+			使用规则:
+				1 表存储引擎必须是innodb
+				2 字段类型要一致
+				3 被参照字段必须要是键值类型的某一种，通常是p					rimary key
+
+			命令格式：
+
+			create table 库.表（
+				字段列表，
+   foreign   key(字段名)  references  表名(字段名) 
+   on  update  cascade       
+   on  delete    cascade
+   )engine=innodb;
+
+
+yg 员工表
+	编号 姓名 
+ 	1    bob
+	2    tom
+ 	3    bob
+
+create table db1.yg(
+yg_id int  primary key auto_increment,
+name  char(20)
+)engine=innodb;
+
+insert into db1.yg(name)values("bob");
+insert into db1.yg(name)values("tom");
+insert into db1.yg(name)values("bob");
+select  * from  db1.yg;
+gz 工资表
+	编号 工资
+	 1   30000  
+	 2   50000
+
+create table db1.gz(
+gz_id int,
+pay  float(7,2),
+foreign key(gz_id) references yg(yg_id) 
+on  update  cascade on delete cascade
+)engine=innodb;
+	 
+mysql> desc db1.gz;
+mysql> show create table db1.gz\G;
+mysql> select  * from  db1.gz;
+
+			测试外键：
+mysql> insert into db1.gz values(4,50000);
+
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`db1`.`gz`, CONSTRAINT `gz_ibfk_1` FOREIGN KEY (`gz_id`) REFERENCES `yg` (`yg_id`) ON DELETE CASCADE ON UPDATE CASCADE)
+
+
+mysql> insert into db1.gz values(1,50000);
+
+mysql> insert into db1.gz values(2,45000);
+
+mysql> insert into db1.gz values(3,35000);
+
+mysql> select  * from db1.gz;
+
+					练习 到 17：52 
+
+mysql> update db1.yg  set yg_id=4 where yg_id=3;
+mysql> select  * from  db1.yg;
+mysql> select  * from  db1.gz;
+
+
+mysql> delete from db1.yg where yg_id=1;
+mysql> select  * from  db1.yg;
+mysql> select  * from  db1.gz;
+
+mysql> delete from db1.gz;
+mysql> alter table db1.gz add primary key(gz_id);
+
+		删除外键
+			mysql> show create table db1.gz\G;
+			mysql> alter table db1.gz drop foreign key gz_ibfk_1;
+
+
+		50  51 52 53
+
+		前任信息表
+		婚宴邀请表 （邀请人必须在前任信息表里选）
+++++++++RDBMS1_DAY02 学习内容
+1 约束条件 ： 作用？ 包括那些？ 约束条件相关的命令 ？
+
+2 修改表结构： 命令格式 ？ 执行动作有那些？  
+
+3 mysql键值 ： 键值类型 ？  普通索引的使用？ 主键的使用 ？ 外键的使用？
+
+		
+++++++++RDBMS1_DAY03
+一、数据导入导出
+
+	修改搜索路径
+	]# mkdir  /myload  
+	]# chown  mysql  /myload
+	]# vim  /etc/my.cnf
+     		[mysqld]
+     		secure_file_priv="/myload“
+	:wq
+	]# systemctl  restart mysqld
+
+	mysql> show  variables  like  “secure_file_priv”;  查看
+
+
+
+	1.1 数据导入：
+		作用？把系统文件的内容存储到数据的表里
+		命令格式？
+		mysql>  
+		load  data  infile   "目录名/文件名" 
+into   table  库名.表名
+fields terminated   by   "分隔符"
+lines  terminated  by   "\n";
+
+
+		注意事项？
+			字段分隔符要与文件一致
+			表字段类型和字段个数要与文件匹配
+			导入数据时指定文件的绝对路径
+
+		操作步骤？
+			create database db3;
+			create table db3.user(
+				name char(50),
+				password  char(1),
+				uid int,
+				gid int,
+				comment  char(150),
+				homedir char(50),
+				shell	char(50)
+			);
+
+			desc db3.user;
+
+			select  * from db3.user;
+
+			]# cp /etc/passwd  /myload/
+
+mysql> load data infile "/myload/passwd" into table db3.user
+       fields terminated by ":" lines terminated by "\n" ;
+mysql> select  * from  db3.user;
+mysql> alter table  db3.user 
+    -> add
+    -> id  int primary key auto_increment first;
+mysql> select  * from  db3.user;
+mysql> select  * from  db3.user where id=1;        （10:30 上课）
+
+
+	1.2 数据导出 :
+		作用：把表记录存储到系统文件里
+
+		命令格式：
+			格式1：
+			mysql>  select命令   into   outfile   “目录名/文件";
+
+			格式2：
+			mysql>  select命令   into   outfile   “目录名/文件" 
+				fields   terminated   by   “分隔符”;
+
+
+			格式3：
+			mysql>  select命令   into   outfile   “目录名/文件"
+				fields   terminated   by   “分隔符”
+				lines	  terminated   by   “分隔符” ;
+
+
+		注意事项：
+			导出数据行数由SQL查询决定。
+			导出的是表记录，不包括字段名。
+			自动创建存储数据的文件。
+			存储数据文件，具有唯一性。
+
+
+		例子：
+
+		mysql> select  * from  db3.user  into outfile "/myload/user1.txt";
+
+		mysql> select  * from  db3.user  where id<=3   into outfile "/myload/user2.txt" fields   terminated   by "###";
+
+
+		mysql> select  name,uid,shell from  db3.user  where id<=3   into outfile "/myload/user3.txt" fields   terminated   by "#"  lines terminated   by "???";
+
+		]# ls /myload
+		]# vim /myload/user1.txt
+		]# vim /myload/user2.txt
+		]# vim /myload/user3.txt
+						练习到 10：57
+
+
+
+二、管理表记录 （db3.user）
+
+		2.1 添加记录
+			格式1 添加1条记录，给所有字段赋值
+				  insert   into   库.表名  values (字段值列表)；						
+mysql> insert into  user 
+	values (22,"bob","x",3000,3000,"test user","/home/bob","/bin/bash");	                                                                             
+
+			格式2：添加N条记录，给所有字段赋值
+				insert   into   库.表名  values (字段值列表), (字段值列表);
+
+mysql> insert into  user 
+values 
+(23,"lucy","x",3001,3000,"test user","/home/bob","/bin/bash"),
+(24,"tom","x",3002,3000,"test user","/home/bob","/bin/bash"),
+(25,"jack","x",3003,3000,"test user","/home/bob","/bin/bash");
+
+			格式3：添加1条记录，给指定字段赋值
+				insert   into  表名 (字段名列表) values (字段值列表);
+
+mysql> insert into user(name,uid)values("jerry","4000");
+
+			格式4：添加N条记录，给指定字段赋值
+				insert   into  表名 (字段名列表) 
+					values (字段值列表),(字段值列表);
+
+mysql> insert into user(name,uid)values("mack","4001"),("lili",4002),("dachui",4003);
+
+			注意事项：
+				字段值要与字段类型相匹配。
+				字符类型的字段，要用 ””号括起来。
+				依次给所有字段赋值时，字段名可以省略。
+				只给部分字段赋值时，必须明确写出对应的字段名称。
+				没有赋值的字段使用默认值或自增长赋值。
+
+
+				
+		2.2 查看记录
+			格式1：查看所有记录
+			      select   字段1,字段N  from  库名.表名;
+
+			格式2  条件查询
+			      select  字段1,字段N  from  库名.表名 where 条件表达式;
+
+			注意事项：
+				*表示所有字段
+				查看当前库表记录时库名可以省略
+				字段列表决定显示列个数
+				条件决定显示行的个数
+
+mysql> select  id , name , shell from user;
+mysql> select  * from user;
+
+mysql> select  id , name , shell from user where name="adm";
+
+mysql> select * from user where id<=5;
+
+		2.3 修改记录
+			格式1，批量更新
+				update  库名.表名 set  字段名=值 , 字段名=值 , 字段名=值;
+
+			格式2，条件匹配更新
+				update  库名.表名 set  字段名=值 , 字段名=值 , 字段名=值
+					where 匹配条件;
+
+			注意事项:
+			字段值要与字段类型相匹配
+			对于字符类型的字段，值要用双引号括起来
+			若不使用where限定条件，会更新所有记录字段值
+			限定条件时，只更新匹配条件的记录的字段值
+
+mysql> update user set  password="A" , comment="student user" ;
+mysql> update user set password="x" where name="root";
+
+		2.4 删除记录
+			格式1，条件匹配删除
+					delete    from   库名.表名  where  条件表达式;
+				
+			格式2，删除所有记录
+					delete    from   库名.表名;
+
+			注意事项:
+				不加条件删除表中的所有行
+
+mysql> delete from user where id>21;
+mysql> delete from user ;
+
+三、匹配条件
+	3.1 基本匹配条件(适用于select \ update \delete)
+		3.1.1 数值比较 >  >=  <  <=  =  !=
+				mysql> select  * from user where uid=3;
+				mysql> select  * from user where id<=5;
+				mysql> select name,uid,gid from user 
+						where uid=gid ;
+
+				mysql> select name,uid,gid from user 
+						where uid!=gid ;			
+
+		3.1.2 字符比较  =    !=
+				mysql> select name,shell from user 
+						where shell != "/bin/bash";
+				mysql> select name,shell from user 
+						where name = "adm";
+		3.1.3 范围内比较
+			in  (值列表) 	在…里…
+			not  in  (值列表)	不在…里…
+			between 数字 and  数字	在…之间…
+
+			mysql> select name from user 
+			where  name in ("mysql","apache","adm","sync");
+
+			mysql> select name,uid from user 
+					where  uid in (3,5,7,9);
+
+			mysql> select name,shell from user 
+			where  shell not in ("/bin/bash","/sbin/nologin");
+
+			mysql> select name,uid from  user 
+				where  uid between 50 and 100;
+
+		3.1.4 逻辑比较(多个判断条件)
+			逻辑与  and  或 && (多个判断条件必须同时成立)
+			逻辑或  or   或 || (多个判断条件，某个成立即可)
+			逻辑非  取反 ！ 或 not 
+mysql> select  * from user 
+       where  name="root" and  uid=1  and shell="abc" ;
+
+mysql> select  * from user  where name="root" or  uid=1  or shell="abc";
+
+mysql> select  * from user  
+     where name="root" &&  uid=0  &&  shell="/bin/bash";
+
+		3.1.5 空/非空
+		     is null  / is not null
+
+mysql> insert into user(name) values(null);
+mysql> select id from  user where name is null ;
+mysql> select id from  user where name is not null ;
+							练习到14：40 
+
+		3.1.6 去掉重复数据 distinct 
+			
+		mysql> select  shell from user where uid>=100;
+		mysql> select distinct shell from user where uid>=100;
+		mysql> select distinct shell from user ;
+
+	休息到15：15
+
+	3.2 高级匹配条件(适用于select \ update \delete)
+		3.2.1 模糊匹配
+		where 字段名  like   '通配符'
+			_      表示1个字符
+			%     表示0~n个字符
+
+mysql> select name from user where  name like '____';
+mysql> select name from user where  name like '__%__';
+mysql> select name from user where  name like '%a%';
+mysql> select name from user where  name like 'a%';
+
+		3.2.2 正则匹配
+			where 字段名  regexp   '正则表达式' 
+			正则符号 ^ $ . * [] |
+
+mysql> select name from user where name regexp  '^r|y$';
+
+mysql> select name from user where name regexp  '^r.*y$';
+
+mysql> select name,uid from user where uid regexp  '^....$';
+
+mysql> insert into user(name)values("yaya9"),("7yaya"),("ya8ya");
+mysql> select name,uid from user where name regexp  '[0-9]';
+
+		3.2.3 四则计算  + - * / %
+mysql> select name , uid , gid ,  uid+gid  zh from user where  name="bin";
+mysql> select name , uid , gid ,  uid+gid  zh from user ;
+
+mysql> update user set gid=gid+1 ;
+
+mysql> alter table user add  age tinyint unsigned default 19 after name;
+mysql> select name,age, 2019-age  your_s from user where name="root";
+
+
+		3.2.4 提高优先级 ()
+			mysql> select name , uid , gid ,  (uid+gid)/2  pjz from user where name="adm";
+		
+
+	3.3 操作查询结果(适用于select)
+		3.3.1 聚集函数(MySQL内置数据统计命令)
+			avg(字段名)			//统计字段平均值
+			sum(字段名) 			//统计字段之和
+			min(字段名) 			//统计字段最小值
+			max(字段名) 			//统计字段最大值
+			count(字段名) 			//统计字段值个数
+
+			mysql> select min(uid) from user;
+			mysql> select max(uid) from user;
+			mysql> select avg(uid) from user;
+			mysql> select sum(uid) from user;
+
+mysql> select count(name) from  user where shell != "/bin/bash";
+mysql> select count(name) from  user;
+
+mysql> select * from  user ;
+mysql> select count(*) from  user ;
+  					
+		3.3.2 查询结果排序 
+			SQL查询   order   by   字段名   [ asc | desc ];
+
+mysql> select name,uid from user  
+        where uid >=10  and uid <= 500 ;
+
+mysql> select name,uid from user  
+	where uid >=10  and uid <= 500 order by uid
+
+mysql> select name,uid from user  
+	where uid >=10  and uid <= 500 order by uid desc ;
+
+		3.3.2 查询结果分组
+			SQL查询  group   by   字段名;
+
+mysql> select shell from user  where uid <=500;
+mysql> select shell from user  where uid <=500 group by  shell;
+
+mysql> select gid  from user ;
+mysql> select gid  from user  group by  gid;			
+
+		3.3.3 查询结果过滤
+			SQL查询   having   条件表达式;
+
+mysql> select name from  user where id<=20  ;
+mysql> select name from  user where id<=20  having name="adm";
+
+		3.3.4 限制查询结果显示行数
+			SQL查询  limit  数字; 	//显示查询结果前多少条记录
+		SQL查询  limit  数字1,数字2; //显示指定范围内的查询记录
+		数字1  起始行 （0 表示第1行  ）
+		数字2  总行数
+
+
+mysql> select id,name,password from  user where id<=20;
+mysql> select id,name,password from  user where id<=20 limit 10;
+mysql> select id,name,password from  user where id<=20 limit  5;
+
+mysql> select name,uid from user where id<=10;
+mysql> select name,uid from user where id<=10 limit 0,2;
+mysql> select name,uid from user where id<=10 limit 1,3;
+
+		练习到 17：10 
+		休息到 17：25
+
+四、MySQL管理工具
+	在192.168.4.50 上安装图形软件phpMyAdmin
+	# yum  -y  install  httpd  php  php-mysql
+	# systemctl start httpd 
+	# systemctl  enabled  httpd 
+
+	# tar  -zxvf  phpMyAdmin-2.11.11-all-languages.tar.gz
+	# mv  phpMyAdmin-2.11.11-all-languages  /var/www/html/phpmyadmin
+
+	# cd /var/www/html/phpmyadmin/
+	# cp  config.sample.inc.php   config.inc.php  //创建主配置文件
+
+	# vim  config.inc.php
+	17   $cfg[‘blowfish_secret’] = ‘plj123’;  //cookies参数
+	31   $cfg[‘Servers’][$i][‘host’] = ‘localhost’; //数据库服务器IP地址
+	
+	访问软件管理数据库服务
+	http://192.168.4.50/phpmyadmin
+	用户名 root
+	密  码  
+
+
+
+
+
+
+
+
+
+
+
